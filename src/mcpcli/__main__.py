@@ -340,7 +340,7 @@ def cli_main():
 
     parser.add_argument(
         "--provider",
-        choices=["openai", "anthropic", "ollama"],
+        choices=["openai", "anthropic", "ollama", "siliconflow"],
         default="openai",
         help="LLM provider to use. Defaults to 'openai'.",
     )
@@ -356,6 +356,7 @@ def cli_main():
     model = args.model or (
         "gpt-4o-mini" if args.provider == "openai"
         else "claude-3-5-haiku-latest" if args.provider == "anthropic"
+        else "Qwen/Qwen2.5-72B-Instruct" if args.provider == "siliconflow"
         else "qwen2.5-coder"
     )
     os.environ["LLM_PROVIDER"] = args.provider

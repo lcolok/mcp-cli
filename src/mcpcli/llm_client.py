@@ -14,11 +14,14 @@ load_dotenv()
 
 
 class LLMClient:
-    def __init__(self, provider="openai", model="gpt-4o-mini", api_key=None):
+    def __init__(
+        self, provider="openai", model="gpt-4-mini", api_key=None, base_url=None
+    ):
         # set the provider, model and api key
         self.provider = provider
         self.model = model
         self.api_key = api_key
+        self.base_url = base_url
 
         # ensure we have the api key for openai if set
         if provider == "openai":
@@ -29,7 +32,18 @@ class LLMClient:
         elif provider == "anthropic":
             self.api_key = self.api_key or os.getenv("ANTHROPIC_API_KEY")
             if not self.api_key:
-                raise ValueError("The ANTHROPIC_API_KEY environment variable is not set.")
+                raise ValueError(
+                    "The ANTHROPIC_API_KEY environment variable is not set."
+                )
+        # check siliconflow api key
+        elif provider == "siliconflow":
+            self.api_key = self.api_key or os.getenv("SILICONFLOW_API_KEY")
+            if not self.api_key:
+                raise ValueError(
+                    "The SILICONFLOW_API_KEY environment variable is not set."
+                )
+            # 设置默认的 base_url
+            self.base_url = self.base_url or "https://api.siliconflow.cn/v1"
         # check ollama is good
         elif provider == "ollama" and not hasattr(ollama, "chat"):
             raise ValueError("Ollama is not properly configured in this environment.")
@@ -44,6 +58,9 @@ class LLMClient:
         elif self.provider == "anthropic":
             # perform an anthropic completion
             return self._anthropic_completion(messages, tools)
+        elif self.provider == "siliconflow":
+            # perform a siliconflow completion
+            return self._siliconflow_completion(messages, tools)
         elif self.provider == "ollama":
             # perform an ollama completion
             return self._ollama_completion(messages, tools)
