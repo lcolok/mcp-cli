@@ -247,3 +247,37 @@ class LLMClient:
             # error
             logging.error(f"Ollama API Error: {str(e)}")
             raise ValueError(f"Ollama API Error: {str(e)}")
+
+    def _siliconflow_completion(
+        self, messages: List[Dict], tools: List
+    ) -> Dict[str, Any]:
+        """Handle SiliconFlow chat completions using OpenAI client."""
+        try:
+            # get the openai client with SiliconFlow base_url
+            client = OpenAI(api_key=self.api_key, base_url=self.base_url)
+
+            # make a request, passing in tools
+            # 只使用 OpenAI 客户端支持的参数
+            response = client.chat.completions.create(
+                model=self.model,
+                messages=messages,
+                tools=tools or [],
+                temperature=0.7,
+                top_p=0.95,
+                frequency_penalty=0.5,
+                n=1,
+                stream=False,
+                response_format={"type": "text"},
+                # 移除了 top_k 参数
+                # 如果需要其他参数，确保它们在 OpenAI 客户端的支持列表中
+            )
+
+            # return the response
+            return {
+                "response": response.choices[0].message.content,
+                "tool_calls": getattr(response.choices[0].message, "tool_calls", []),
+            }
+        except Exception as e:
+            # error
+            logging.error(f"SiliconFlow API Error: {str(e)}")
+            raise ValueError(f"SiliconFlow API Error: {str(e)}")
